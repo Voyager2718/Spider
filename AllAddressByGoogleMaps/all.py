@@ -1,4 +1,4 @@
-import urllib, json
+import urllib.request, json
 from math import radians, cos, sin, asin, sqrt
 
 API_ID = 'YOUR_GOOGLE_API_ID'
@@ -25,9 +25,12 @@ def extractAddress(JSON):
         res += [item['vicinity']]
     return res
 
-def getAddresses(coord, keyword, lang = 'zh-CN', radius = 5000):
-    url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + str(coord[0]) + ',' + str(coord[1]) + '&radius=' + str(radius) + '&keyword=' + str(keyword) + '&key=' + str(API_ID)
+def getAddresses(coord, keyword, api_id = API_ID, lang = 'zh-CN', radius = 5000):
+    url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + str(coord[0]) + ',' + str(coord[1]) + '&radius=' + str(radius) + '&keyword=' + str(keyword) + '&language=' + str(lang) + '&key=' + str(api_id)  
     value = urllib.request.urlopen(url).read().decode('utf-8')
     jsonValue = json.loads(value)
+    if jsonValue['status'] == 'REQUEST_DENIED':
+        print('Error:', jsonValue['error_message'])
+        print(url)
+        return None
     return extractAddress(jsonValue)
-
