@@ -1,4 +1,4 @@
-import urllib.request, json
+import urllib.request, urllib.parse, json
 from math import radians, cos, sin, asin, sqrt, pi
 import time
 
@@ -6,7 +6,10 @@ API_ID = 'YOUR_GOOGLE_API_ID'
 
 banks = ['平安银行','宁波银行','浦发银行','华夏银行','民生银行','招商银行','南京银行','兴业银行','北京银行','农业银行','交通银行','工商银行','光大银行','建设银行','中国银行','中信银行']
 
-def readLine(file, passHead = 0):
+def getCities(file, passHead = 1):
+    """
+    Get all cities and its' coordinate.
+    """
     fp = open(file,'r+')
     line = fp.readline()
     array = []
@@ -64,50 +67,78 @@ def distance(coord0, coord1):
     return km
 
 def extractAddress(JSON):
+    """
+    Extract address from JSON.
+    """
     results = JSON['results']
     res = []
     for item in results:
         res += [item['vicinity']]
+    if 'next_page_token' in JSON:
+        res += [{'token': JSON['next_page_token']}]
     return res
 
+def getAddressesLength(array):
+    l = []
+    for i in array:
+         l += [len(i[3])]
+    return l
+
 #Google pagination API may not response for a while, so just push to the list to get the result in the future.
-delayedRequest = []
+#def __init__(self):
+#   self.__delayedRequests = []
 
 def getAddresses(coord, keyword, api_id = API_ID, lang = 'zh-CN', radius = 5000, pagetoken = None):
+    keyword = urllib.parse.quote(keyword) 
+    url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + str(coord[0]) + ',' + str(coord[1]) + '&radius=' + str(radius) + '&keyword=' + str(keyword) + '&language=' + str(lang) + '&key=' + str(api_id)
     if pagetoken:
-        url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?pagetoken=' + pagetoken + '&language=' + str(lang) + '&key=' + str(api_id)
-    else:
-        url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + str(coord[0]) + ',' + str(coord[1]) + '&radius=' + str(radius) + '&keyword=' + str(keyword) + '&language=' + str(lang) + '&key=' + str(api_id)
-    print(url) 
-    value = urllib.request.urlopen(url).read().decode('utf-8')
-    jsonValue = json.loads(value)
+        url += '&pagetoken=' + pagetoken
+    jsonValue = json.loads(urllib.request.urlopen(url).read().decode('utf-8'))
     if jsonValue['status'] != 'OK' and jsonValue['status'] != 'ZERO_RESULTS':
         if 'error_message' in jsonValue:
             print('Error:', jsonValue['error_message'])
         else:
             print(str(jsonValue['status']))
-        return [{'json': jsonValue, 'url': url}]
-    if 'next_page_token' in jsonValue:
-        return extractAddress(jsonValue) + getAddresses(coord, keyword, api_id, lang, radius, jsonValue['next_page_token'])
+        return [{'status': str(jsonValue['status']), 'url': url}]
     return extractAddress(jsonValue)
+
+def runThrough(cities, keyword, api_id = API_ID, lang = 'zh-CN', radius = 5000, file = 'test.json'):
+    num = 0
+    allAddr = []
+    results = []
+    for c in cities:
+        addr = getAddresses((c[3],c[4]), keyword, api_id=api_id, lang=lang, radius=radius)
+        addr2 = []
+        for a in addr:
+            if a not in allAddr:
+                allAddr += [a]
+                addr2 += [a]
+        results += [[c[0],c[1],c[2],addr2]]
+        num += 1
+        print('Running...' + str(num))
+    return results
+
+def re_read(data, api_id = API_ID, lang = 'zh-CN'):
+    num = 0
+    for d in data:
+        for i in range(len(d[3])):
+            if type(d[3][i]) == dict:
+                num += 1
+                print('Re-reading item...' + str(num))
+                url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?language=' + str(lang) + '&pagetoken=' + str(d[3][i]['token']) + '&key=' + str(api_id)
+                jsonValue = json.loads(urllib.request.urlopen(url).read().decode('utf-8'))
+                if jsonValue['status'] == 'INVALID_REQUEST':
+                    continue
+                del d[3][i]
+                d[3] += extractAddress(jsonValue)
+                time.sleep(1)
+    return data
+    
 
 def writeRawResults(results, file):
     fp = open(file, 'w+')
-    fp.write(json.dumps(results, ensure_ascii=False))
+    fp.write(json.dumps(results))
     fp.close()
-
-def runThrough(cities, keyword, api_id = API_ID, lang = 'zh-CN', radius = 5000, file = 'test.json'):
-    results = []
-    for c in cities:
-        results += [(c[0],c[1],c[2],getAddresses((c[3],c[4]), keyword, api_id=api_id, lang=lang, radius=radius))]
-    writeRawResults(results, file)    
-    return results
-
-def getAddressesLength(array):
-    l = []
-    for i in array:
-        l += [len(i[3])]
-    return l
 
 def run(bank,file):
     cities = readLine('cities.csv', 1)
