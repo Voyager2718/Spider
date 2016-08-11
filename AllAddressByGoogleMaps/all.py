@@ -79,23 +79,26 @@ def getAddresses(coord, keyword, api_id = API_ID, lang = 'zh-CN', radius = 5000,
     print(url) 
     value = urllib.request.urlopen(url).read().decode('utf-8')
     jsonValue = json.loads(value)
-    if jsonValue['status'] == 'INVALID_REQUEST' and pagetoken:
-        return extractAddress(jsonValue) + getAddresses(coord, keyword, api_id, lang, radius, pagetoken)
     if jsonValue['status'] != 'OK' and jsonValue['status'] != 'ZERO_RESULTS':
         if 'error_message' in jsonValue:
             print('Error:', jsonValue['error_message'])
         else:
             print(str(jsonValue['status']))
-        return [jsonValue]
+        return [{'json': jsonValue, 'url': url}]
     if 'next_page_token' in jsonValue:
         return extractAddress(jsonValue) + getAddresses(coord, keyword, api_id, lang, radius, jsonValue['next_page_token'])
     return extractAddress(jsonValue)
 
-def runThrough(cities, keyword, api_id = API_ID, lang = 'zh-CN', radius = 5000):
+def writeRawResults(results, file):
+    fp = open(file, 'w+')
+    fp.write(json.dumps(results, ensure_ascii=False))
+    fp.close()
+
+def runThrough(cities, keyword, api_id = API_ID, lang = 'zh-CN', radius = 5000, file = 'test.csv'):
     results = []
     for c in cities:
         results += [(c[0],c[1],c[2],getAddresses((c[3],c[4]), keyword, api_id=api_id, lang=lang, radius=radius))]
-    
+    writeRawResults(results, file)    
     return results
 
 def getAddressesLength(array):
