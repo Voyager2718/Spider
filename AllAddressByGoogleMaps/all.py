@@ -3,6 +3,18 @@ from math import radians, cos, sin, asin, sqrt
 
 API_ID = 'YOUR_GOOGLE_API_ID'
 
+def readLine(file):
+    fp = open(file,'r+')
+    line = fp.readline()
+    array = []
+    while(line != ''):
+            array += [line.replace('\n','').split(',')]
+            line = fp.readline()
+    fp.close()
+    return array
+
+
+
 def haversine(lon1, lat1, lon2, lat2):
     """
     Calculate the great circle distance between two points 
@@ -34,3 +46,13 @@ def getAddresses(coord, keyword, api_id = API_ID, lang = 'zh-CN', radius = 5000)
         print(url)
         return None
     return extractAddress(jsonValue)
+
+def writeReversely(array,file):
+    fp = open(file,'w+')
+    for item in array:
+            fp.write(item[0] + ',')
+            fp.write(item[1] + ',')
+            fp.write(item[2] + ',')
+            fp.write(item[4] + ',')
+            fp.write(item[3] + '\n')
+    fp.close()
