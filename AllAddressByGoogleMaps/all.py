@@ -4,6 +4,8 @@ import time
 
 API_ID = 'YOUR_GOOGLE_API_ID'
 
+banks = ['平安银行','宁波银行','浦发银行','华夏银行','民生银行','招商银行','南京银行','兴业银行','北京银行','农业银行','交通银行','工商银行','光大银行','建设银行','中国银行','中信银行']
+
 def readLine(file, passHead = 0):
     fp = open(file,'r+')
     line = fp.readline()
@@ -94,7 +96,7 @@ def writeRawResults(results, file):
     fp.write(json.dumps(results, ensure_ascii=False))
     fp.close()
 
-def runThrough(cities, keyword, api_id = API_ID, lang = 'zh-CN', radius = 5000, file = 'test.csv'):
+def runThrough(cities, keyword, api_id = API_ID, lang = 'zh-CN', radius = 5000, file = 'test.json'):
     results = []
     for c in cities:
         results += [(c[0],c[1],c[2],getAddresses((c[3],c[4]), keyword, api_id=api_id, lang=lang, radius=radius))]
@@ -106,3 +108,7 @@ def getAddressesLength(array):
     for i in array:
         l += [len(i[3])]
     return l
+
+def run(bank,file):
+    cities = readLine('cities.csv', 1)
+    return runThrough(cities,bank,'AIzaSyASD8Q8MNkADgc0j1511ebL3V4YFeiqGFQ',radius=10000,file=file)
