@@ -75,6 +75,7 @@ def extractAddress(JSON):
     for item in results:
         res += [item['vicinity']]
     if 'next_page_token' in JSON:
+        print('Extended page detected.')
         res += [{'token': JSON['next_page_token']}]
     return res
 
@@ -120,18 +121,26 @@ def runThrough(cities, keyword, api_id = API_ID, lang = 'zh-CN', radius = 5000, 
 
 def re_read(data, api_id = API_ID, lang = 'zh-CN'):
     num = 0
-    for d in data:
-        for i in range(len(d[3])):
-            if type(d[3][i]) == dict:
-                num += 1
-                print('Re-reading item...' + str(num))
-                url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?language=' + str(lang) + '&pagetoken=' + str(d[3][i]['token']) + '&key=' + str(api_id)
-                jsonValue = json.loads(urllib.request.urlopen(url).read().decode('utf-8'))
-                if jsonValue['status'] == 'INVALID_REQUEST':
-                    continue
-                del d[3][i]
-                d[3] += extractAddress(jsonValue)
-                time.sleep(1)
+    unread = False
+    while True:
+        for d in data:
+            for i in range(len(d[3])):
+                if type(d[3][i]) == dict:
+                    num += 1
+                    print('Re-reading item...' + str(num))
+                    url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?language=' + str(lang) + '&pagetoken=' + str(d[3][i]['token']) + '&key=' + str(api_id)
+                    jsonValue = json.loads(urllib.request.urlopen(url).read().decode('utf-8'))
+                    if jsonValue['status'] == 'INVALID_REQUEST':
+                        unread = True
+                        continue
+                    unread = unread or False
+                    del d[3][i]
+                    d[3] += extractAddress(jsonValue)
+                    if 'next_page_token' in jsonValue:
+                        unread = True
+                    time.sleep(1)
+        if not unread:
+            break
     return data
     
 
@@ -140,6 +149,8 @@ def writeRawResults(results, file):
     fp.write(json.dumps(results))
     fp.close()
 
-def run(bank,file):
-    cities = readLine('cities.csv', 1)
-    return runThrough(cities,bank,'AIzaSyASD8Q8MNkADgc0j1511ebL3V4YFeiqGFQ',radius=10000,file=file)
+def run(bank, api_id = API_ID, file='cities.csv', radius=5000, lang = 'zh-CN', threads=1, ):
+    cities = getCities(file)
+    d = runThrough(cities, bank, api_id=api_id, radius=radius, lang = lang)
+    addresses = re_read(d, api_id=api_id)
+    return addresses
