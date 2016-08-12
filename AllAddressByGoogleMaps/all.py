@@ -149,4 +149,4 @@ def writeRawResults(results, file):
 
 def run(bank, file='cities.csv', api_id = API_ID, threads=1):
     cities = getCities(file)
-    addresses = re_read(runThrough(cities, bank, api_id=api_id),api_id=api_id=api_id)
+    addresses = re_read(runThrough(cities, bank, api_id=api_id),api_id=api_id)
