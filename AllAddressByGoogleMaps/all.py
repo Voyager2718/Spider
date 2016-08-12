@@ -133,9 +133,11 @@ def re_read(data, api_id = API_ID, lang = 'zh-CN'):
                     if jsonValue['status'] == 'INVALID_REQUEST':
                         unread = True
                         continue
-                    unread = unread or False #Bug here.
+                    unread = unread or False
                     del d[3][i]
                     d[3] += extractAddress(jsonValue)
+                    if 'next_page_token' in jsonValue:
+                        unread = True
                     time.sleep(1)
         if not unread:
             break
@@ -147,6 +149,8 @@ def writeRawResults(results, file):
     fp.write(json.dumps(results))
     fp.close()
 
-def run(bank, file='cities.csv', api_id = API_ID, threads=1):
+def run(bank, api_id = API_ID, file='cities.csv', radius=5000, lang = 'zh-CN', threads=1, ):
     cities = getCities(file)
-    addresses = re_read(runThrough(cities, bank, api_id=api_id),api_id=api_id)
+    d = runThrough(cities, bank, api_id=api_id, radius=radius, lang = lang)
+    addresses = re_read(d, api_id=api_id)
+    return addresses
