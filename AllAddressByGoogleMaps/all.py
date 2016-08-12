@@ -147,6 +147,6 @@ def writeRawResults(results, file):
     fp.write(json.dumps(results))
     fp.close()
 
-def run(bank, file='TODO', api_id = API_ID, threads=1):
-    cities = readLine('cities.csv', 1)
-    return re_read(runThrough(cities,bank, api_id,radius=10000,file=file), api_id)
+def run(bank, file='cities.csv', api_id = API_ID, threads=1):
+    cities = getCities(file)
+    addresses = re_read(runThrough(cities, bank, api_id=api_id),api_id=api_id=api_id)
