@@ -25,32 +25,6 @@ def getCities(file, passHead = 1):
     fp.close()
     return array
 
-def writeReversely(array,file):
-    """
-    Reverse latitude and longitude.
-    """
-    fp = open(file,'w+')
-    for item in array:
-            fp.write(item[0] + ',')
-            fp.write(item[1] + ',')
-            fp.write(item[2] + ',')
-            fp.write(item[4] + ',')
-            fp.write(item[3] + '\n')
-    fp.close()
-
-def offset(coord, offsetting):
-    """
-    Swifting to another coordinate.
-    """
-    R=6378137
-    dn, de = offsetting[0], offsetting[1]
-    lon, lat = coord[0], coord[1]
-    dLon = dn/(R*cos(pi*lat/180))
-    dLat = de/R
-    lon0 = lon + dLon * 180/pi
-    lat0 = lat + dLat * 180/pi
-    return (lon0, lat0)
-
 def distance(coord0, coord1):
     """
     Calculate the great circle distance between two points 
@@ -68,60 +42,6 @@ def distance(coord0, coord1):
     c = 2 * asin(sqrt(a)) 
     km = 6367 * c
     return km
-
-def extractAddress(JSON):
-    """
-    Extract address from JSON.
-    """
-    results = JSON['results']
-    res = []
-    for item in results:
-        res += [item['vicinity']]
-    if 'next_page_token' in JSON:
-        print('Extended page detected.')
-        res += [{'token': JSON['next_page_token']}]
-    return res
-
-def extractAddressAndCoordinate(JSON):
-    results = JSON['results']
-    res = []
-    for item in results:
-        res += [(item['vicinity'], item['geometry']['location']['lat'], item['geometry']['location']['lng'])]
-    if 'next_page_token' in JSON:
-        print('Extended page detected.')
-        res += [{'token': JSON['next_page_token']}]
-    return res
-
-def getAddressesLength(array):
-    l = []
-    for i in array:
-         l += [len(i[3])]
-    return l
-
-#Google pagination API may not response for a while, so just push to the list to get the result in the future.
-#def __init__(self):
-#   self.__delayedRequests = []
-
-def getAddresses(coord, keyword, api_id = API_ID, lang = 'zh-CN', radius = 5000, pagetoken = None):
-    keyword = urllib.parse.quote(keyword) 
-    url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?type=bank&location=' + str(coord[0]) + ',' + str(coord[1]) + '&radius=' + str(radius) + '&keyword=' + str(keyword) + '&language=' + str(lang) + '&key=' + str(api_id)
-    if pagetoken:
-        url += '&pagetoken=' + pagetoken
-    catchLoop = True
-    while catchLoop:
-        catchLoop = False
-        try:
-            jsonValue = json.loads(urllib.request.urlopen(url).read().decode('utf-8'))
-            if jsonValue['status'] != 'OK' and jsonValue['status'] != 'ZERO_RESULTS':
-                if 'error_message' in jsonValue:
-                    print('Error:', jsonValue['error_message'])
-                else:
-                    print(str(jsonValue['status']))
-                return [{'status': str(jsonValue['status']), 'url': url}]
-            return extractAddress(jsonValue)
-        except HTTPError:
-            print('Got a HTTP error. Retrying...')
-            catchLoop = True
 
 def getAddressesAndCoordinates(coord, keyword, api_id = API_ID, lang = 'zh-CN', radius = 5000, pagetoken = None):
     keyword = urllib.parse.quote(keyword) 
