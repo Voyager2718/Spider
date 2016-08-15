@@ -104,7 +104,7 @@ def getAddressesLength(array):
 
 def getAddresses(coord, keyword, api_id = API_ID, lang = 'zh-CN', radius = 5000, pagetoken = None):
     keyword = urllib.parse.quote(keyword) 
-    url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + str(coord[0]) + ',' + str(coord[1]) + '&radius=' + str(radius) + '&keyword=' + str(keyword) + '&language=' + str(lang) + '&key=' + str(api_id)
+    url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?type=bank&location=' + str(coord[0]) + ',' + str(coord[1]) + '&radius=' + str(radius) + '&keyword=' + str(keyword) + '&language=' + str(lang) + '&key=' + str(api_id)
     if pagetoken:
         url += '&pagetoken=' + pagetoken
     catchLoop = True
@@ -125,7 +125,7 @@ def getAddresses(coord, keyword, api_id = API_ID, lang = 'zh-CN', radius = 5000,
 
 def getAddressesAndCoordinates(coord, keyword, api_id = API_ID, lang = 'zh-CN', radius = 5000, pagetoken = None):
     keyword = urllib.parse.quote(keyword) 
-    url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' + str(coord[0]) + ',' + str(coord[1]) + '&radius=' + str(radius) + '&keyword=' + str(keyword) + '&language=' + str(lang) + '&key=' + str(api_id)
+    url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?type=bank&location=' + str(coord[0]) + ',' + str(coord[1]) + '&radius=' + str(radius) + '&keyword=' + str(keyword) + '&language=' + str(lang) + '&key=' + str(api_id)
     if pagetoken:
         url += '&pagetoken=' + pagetoken
     catchLoop = True
@@ -184,7 +184,7 @@ def re_read(data, api_id = API_ID, lang = 'zh-CN'):
                 if type(d[3][i]) == dict:
                     num += 1
                     print('Re-reading item...' + str(num))
-                    url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?language=' + str(lang) + '&pagetoken=' + str(d[3][i]['token']) + '&key=' + str(api_id)
+                    url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?type=bank&language=' + str(lang) + '&pagetoken=' + str(d[3][i]['token']) + '&key=' + str(api_id)
                     jsonValue = json.loads(urllib.request.urlopen(url).read().decode('utf-8'))
                     if jsonValue['status'] == 'INVALID_REQUEST':
                         continue
@@ -254,7 +254,7 @@ def getCoordinates(data, api_id = API_ID):
     for item in data:
         for i in item[3]:
             num += 1
-            url = 'https://maps.googleapis.com/maps/api/geocode/json?language=zh-CN&address=' + str(urllib.parse.quote(item[2]) + urllib.parse.quote(i)) + '&key=' + str(api_id)
+            url = 'https://maps.googleapis.com/maps/api/geocode/json?type=bank&language=zh-CN&address=' + str(urllib.parse.quote(item[2]) + urllib.parse.quote(i)) + '&key=' + str(api_id)
             jsonValue = json.loads(urllib.request.urlopen(url).read().decode('utf-8'))
             if jsonValue['status'] == 'OK':
                 coord += [(float(jsonValue['results'][0]['geometry']['location']['lat']), float(jsonValue['results'][0]['geometry']['location']['lng']))]
