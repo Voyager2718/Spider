@@ -97,6 +97,23 @@ def getResultsInCities(cities, keyword, api_id = API_ID, type = 'bank', lang = '
                 results += [(city[0], city[1], city[2], res)]
                 ids += [res['id']]
         num += 1
-        print('Running...' + str(num) + '/' + str(len(cities)))
+        print('Running...' + keyword + ' ' + str(num) + '/' + str(len(cities)))
     return results
 
+def extractCoords(data):
+    coords = []
+    for item in data:
+        coords += [(item[3]['geometry']['location']['lat'],item[3]['geometry']['location']['lng'])]
+    return coords
+
+def extractAddresses(data):
+    coords = []
+    for item in data:
+        coords += [item[3]['vicinity']]
+    return coords
+
+def runAll(cities, extractFunction, source = banks, api_id = API_ID, type = 'bank', lang = 'zh-CN', radius = 10000):
+    results = {}
+    for s in source:
+        results[s] = extractFunction(getResultsInCities(getCities('tiny.csv'), s, 'AIzaSyCcJUqHWucOoG9r1nscshfBRQE6oycDY04', type, lang, radius))
+    return results
