@@ -167,4 +167,4 @@ def writeCoords(coords, file):
 
 def writeAllCoords(banks_coords):
     for item in banks_coords:
-        writeCoords(banks_coords[item], item + '.csv')
+        writeCoords(banks_coords[item], item + '_coords.csv')
