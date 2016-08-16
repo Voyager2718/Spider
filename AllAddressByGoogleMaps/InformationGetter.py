@@ -53,7 +53,6 @@ def getResults(coord, keyword, api_id = API_ID, type = 'bank', lang = 'zh-CN', r
     return query(url)
 
 def query(url):
-    timeout = 1
     while True:
         try:
             results = json.loads(urllib.request.urlopen(url).read().decode('utf-8'))
@@ -76,20 +75,6 @@ def query(url):
             return {'url' : url}
         except HTTPError:
             print('Got a HTTP error. Retrying...')
-
-def getResultsInCities(cities, keyword, api_id = API_ID, type = 'bank', lang = 'zh-CN', radius = 10000):
-    num = 0
-    results = []
-    ids = []
-    for city in cities:
-        num += 1
-        print('Running...' + keyword + ' ' + str(num) + '/' + str(len(cities)))
-        result = getAllResults((city[3], city[4]), keyword, api_id, type, lang, radius)
-        for res in result:
-            if res['id'] not in ids:
-                results += [(city[0], city[1], city[2], res)]
-                ids += [res['id']]
-    return results
 
 def getResultsInCitiesDelayed(cities, keyword, api_id = API_ID, type = 'bank', lang = 'zh-CN', radius = 10000):
     num = 0
@@ -139,5 +124,5 @@ def extractAddresses(data):
 def runAll(cities, extractFunction, source = banks, api_id = API_ID, type = 'bank', lang = 'zh-CN', radius = 10000):
     results = {}
     for s in source:
-        results[s] = extractFunction(getResultsInCitiesDelayed(getCities('tiny.csv'), s, 'AIzaSyCcJUqHWucOoG9r1nscshfBRQE6oycDY04', type, lang, radius))
+        results[s] = extractFunction(getResultsInCitiesDelayed(cities, s, 'AIzaSyCcJUqHWucOoG9r1nscshfBRQE6oycDY04', type, lang, radius))
     return results
