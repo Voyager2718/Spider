@@ -8,6 +8,25 @@ API_ID = 'YOUR_GOOGLE_API_ID'
 
 banks = ['平安银行','宁波银行','浦发银行','华夏银行','民生银行','招商银行','南京银行','兴业银行','北京银行','农业银行','交通银行','工商银行','光大银行','建设银行','中国银行','中信银行']
 
+banks_hq = {
+    '平安银行' : (22.5407058,114.1075029),
+    '宁波银行' : (29.8097237,121.5420964),
+    '浦发银行' : (31.2378726,121.4899615),
+    '华夏银行' : (39.9076986,116.4202794),
+    '民生银行' : (39.9060149,116.3715725),
+    '招商银行' : (22.5368386,114.0225838),
+    '南京银行' : (32.0544521,118.7841394),
+    '兴业银行' : (26.0928929,119.3020881),
+    '北京银行' : (39.9172526,116.3578085),
+    '农业银行' : (39.9085414,116.4227061),
+    '交通银行' : (31.2395722,121.5040103),
+    '工商银行' : (39.9087474,116.3656513),
+    '光大银行' : (39.9182534,116.3635837),
+    '建设银行' : (39.9129233,116.3581889),
+    '中国银行' : (39.9076719,116.3734256),
+    '中信银行' : (39.9308017,116.4350518)
+}
+
 def getCities(file, passHead = 1):
     """
     Get all cities and its' coordinate.
@@ -53,7 +72,6 @@ def getResults(coord, keyword, api_id = API_ID, type = 'bank', lang = 'zh-CN', r
     return query(url)
 
 def query(url):
-    timeout = 1
     while True:
         try:
             results = json.loads(urllib.request.urlopen(url).read().decode('utf-8'))
@@ -67,37 +85,46 @@ def query(url):
             else:
                 print('Status: ' + str(results['status']))
             print('-' * 50)
-            if 'status' == 'OVER_QUERY_LIMIT':
+            if results['status'] == 'OVER_QUERY_LIMIT':
                 raise Exception('Over limit.')
-            if 'status' == 'REQUEST_DENIED':
+            if results['status'] == 'REQUEST_DENIED':
                 raise Exception('Request denied.')
-            print('Got a "INVALID_REQUEST" error. Retry after ' + str(round(int(timeout))) + ' second...') 
-            time.sleep(timeout)
-            timeout *= 1.5
+            print('Got a "INVALID_REQUEST" error. Retry later...')
+            print('URL:\n\t' + url)
+            return {'url' : url}
         except HTTPError:
             print('Got a HTTP error. Retrying...')
 
-def getAllResults(coord, keyword, api_id = API_ID, type = 'bank', lang = 'zh-CN', radius = 10000):
-    results = []
-    temp_results = getResults(coord, keyword, api_id, type, lang, radius)
-    results += temp_results['results']
-    while 'token' in temp_results:
-        temp_results = getOtherPages(temp_results['token'], api_id, lang)
-        results += temp_results['results']
-    return results
-
-def getResultsInCities(cities, keyword, api_id = API_ID, type = 'bank', lang = 'zh-CN', radius = 10000):
+def getResultsInCitiesDelayed(cities, keyword, api_id = API_ID, type = 'bank', lang = 'zh-CN', radius = 10000):
     num = 0
     results = []
     ids = []
     for city in cities:
-        result = getAllResults((city[3],city[4]),keyword,api_id,type,lang,radius)
-        for res in result:
+        num += 1
+        print('Running in method delay...' + keyword + ' ' + str(num) + '/' + str(len(cities)))
+        result = getResults((city[3],city[4]), keyword, api_id, type, lang, radius)
+        for res in result['results']:
             if res['id'] not in ids:
                 results += [(city[0], city[1], city[2], res)]
                 ids += [res['id']]
-        num += 1
-        print('Running...' + keyword + ' ' + str(num) + '/' + str(len(cities)))
+    rnum = 0    
+    while True:
+        haveUnread = False
+        for result in results:
+            if 'token' in result[3]:
+                print('Re-reading...' + str(rnum))
+                re_read = getOtherPages(result[3]['token'], api_id, lang)
+                if 'url' not in re_read:
+                    del result[3]['token']
+                    result[3]['result'] += re_read['result']
+                    if 'token' in re_read:
+                        result[3]['token'] = re_read['token']
+        haveUnread = False
+        for result in results:
+            if 'token' in result[3]:
+                haveUnread = True
+        if not haveUnread:
+            break
     return results
 
 def extractCoords(data):
@@ -115,5 +142,18 @@ def extractAddresses(data):
 def runAll(cities, extractFunction, source = banks, api_id = API_ID, type = 'bank', lang = 'zh-CN', radius = 10000):
     results = {}
     for s in source:
-        results[s] = extractFunction(getResultsInCities(getCities('tiny.csv'), s, 'AIzaSyCcJUqHWucOoG9r1nscshfBRQE6oycDY04', type, lang, radius))
+        results[s] = extractFunction(getResultsInCitiesDelayed(cities, s, 'AIzaSyCcJUqHWucOoG9r1nscshfBRQE6oycDY04', type, lang, radius))
     return results
+
+def averageDistance(headQuarter, locations):
+    dist = []
+    for item in locations:
+        if type(item[0]) == float and type(item[1]) == float:
+            dist += [distance(item,headQuarter)]
+    return sum(dist)/len(locations)
+
+def getAllAverageDistance(headQuarters, banksLocations):
+    dict = {}
+    for loc in banksLocations:
+        dict[loc] = averageDistance(headQuarters[loc], banksLocations[loc])
+    return dict

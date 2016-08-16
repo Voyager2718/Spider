@@ -1,4 +1,4 @@
-import urllib.request, urllib.parse, json
+1import urllib.request, urllib.parse, json
 from urllib.error import HTTPError
 from math import radians, cos, sin, asin, sqrt, pi
 import time
@@ -189,11 +189,11 @@ def writeCoords(coords, file):
         fp.write(str(item[0]) + ',' + str(item[1]) + '\n')
     fp.close()
 
-def averageDistance(hearQuarter, l):
+def averageDistance(headQuarter, l):
     dist = []
     for item in l:
         if type(item[0]) == float and type(item[1]) == float:
-            dist += [distance(item,hearQuarter)]
+            dist += [distance(item,headQuarter)]
     return sum(dist)/len(l)
 
 def writeJson(j, file):
