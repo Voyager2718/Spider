@@ -168,3 +168,14 @@ def writeCoords(coords, file):
 def writeAllCoords(banks_coords):
     for item in banks_coords:
         writeCoords(banks_coords[item], item + '_coords.csv')
+
+def writeAddresses(addresses, file):
+    fp = open(file, 'w+')
+    for i in range(len(addresses) - 1):
+        fp.write(str(addresses[i]).replace('\u200e','') + '\n')
+    fp.write(str(addresses[i]))
+    fp.close()
+
+def writeAllAddresses(banks_addresses):
+    for item in banks_addresses:
+        writeAddresses(banks_addresses[item], item + '_addresses.csv')
