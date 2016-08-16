@@ -8,6 +8,25 @@ API_ID = 'YOUR_GOOGLE_API_ID'
 
 banks = ['平安银行','宁波银行','浦发银行','华夏银行','民生银行','招商银行','南京银行','兴业银行','北京银行','农业银行','交通银行','工商银行','光大银行','建设银行','中国银行','中信银行']
 
+banks_hq = {
+    '平安银行' : (22.5407058,114.1075029),
+    '宁波银行' : (29.8097237,121.5420964),
+    '浦发银行' : (31.2378726,121.4899615),
+    '华夏银行' : (39.9076986,116.4202794),
+    '民生银行' : (39.9060149,116.3715725),
+    '招商银行' : (22.5368386,114.0225838),
+    '南京银行' : (32.0544521,118.7841394),
+    '兴业银行' : (26.0928929,119.3020881),
+    '北京银行' : (39.9172526,116.3578085),
+    '农业银行' : (39.9085414,116.4227061),
+    '交通银行' : (31.2395722,121.5040103),
+    '工商银行' : (39.9087474,116.3656513),
+    '光大银行' : (39.9182534,116.3635837),
+    '建设银行' : (39.9129233,116.3581889),
+    '中国银行' : (39.9076719,116.3734256),
+    '中信银行' : (39.9308017,116.4350518)
+}
+
 def getCities(file, passHead = 1):
     """
     Get all cities and its' coordinate.
@@ -88,7 +107,6 @@ def getResultsInCitiesDelayed(cities, keyword, api_id = API_ID, type = 'bank', l
             if res['id'] not in ids:
                 results += [(city[0], city[1], city[2], res)]
                 ids += [res['id']]
-
     rnum = 0    
     while True:
         haveUnread = False
@@ -126,3 +144,16 @@ def runAll(cities, extractFunction, source = banks, api_id = API_ID, type = 'ban
     for s in source:
         results[s] = extractFunction(getResultsInCitiesDelayed(cities, s, 'AIzaSyCcJUqHWucOoG9r1nscshfBRQE6oycDY04', type, lang, radius))
     return results
+
+def averageDistance(headQuarter, locations):
+    dist = []
+    for item in locations:
+        if type(item[0]) == float and type(item[1]) == float:
+            dist += [distance(item,headQuarter)]
+    return sum(dist)/len(locations)
+
+def getAllAverageDistance(headQuarters, banksLocations):
+    dict = {}
+    for loc in banksLocations:
+        dict[loc] = averageDistance(headQuarters[loc], banksLocations[loc])
+    return dict
