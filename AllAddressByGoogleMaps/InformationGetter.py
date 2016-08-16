@@ -157,3 +157,14 @@ def getAllAverageDistance(headQuarters, banksLocations):
     for loc in banksLocations:
         dict[loc] = averageDistance(headQuarters[loc], banksLocations[loc])
     return dict
+
+def writeCoords(coords, file):
+    fp = open(file, 'w+')
+    for i in range(len(coords) - 1):
+        fp.write(str(coords[i][0]) + ',' + str(coords[i][1]) + '\n')
+    fp.write(str(coords[i][0]) + ',' + str(coords[i][1]))
+    fp.close()
+
+def writeAllCoords(banks_coords):
+    for item in banks_coords:
+        writeCoords(banks_coords[item], item + '.csv')
