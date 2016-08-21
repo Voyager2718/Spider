@@ -68,7 +68,7 @@ def getOtherPages(token, api_id = API_ID, lang = 'zh-CN'):
 
 def getResults(coord, keyword, api_id = API_ID, type = 'bank', lang = 'zh-CN', radius = 10000):
     keyword = urllib.parse.quote(keyword) 
-    url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?type=' + str(type) +'&location=' + str(coord[0]) + ',' + str(coord[1]) + '&radius=' + str(radius) + '&keyword=' + str(keyword) + '&language=' + str(lang) + '&key=' + str(api_id)
+    url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?types=' + str(type) +'&location=' + str(coord[0]) + ',' + str(coord[1]) + '&radius=' + str(radius) + '&keyword=' + str(keyword) + '&language=' + str(lang) + '&key=' + str(api_id)
     return query(url)
 
 def query(url):
@@ -142,7 +142,7 @@ def extractAddresses(data):
 def runAll(cities, extractFunction, source = banks, api_id = API_ID, type = 'bank', lang = 'zh-CN', radius = 10000):
     results = {}
     for s in source:
-        results[s] = extractFunction(getResultsInCitiesDelayed(cities, s, 'AIzaSyCcJUqHWucOoG9r1nscshfBRQE6oycDY04', type, lang, radius))
+        results[s] = extractFunction(getResultsInCitiesDelayed(cities, s, api_id, type, lang, radius))
     return results
 
 def averageDistance(headQuarter, locations):
