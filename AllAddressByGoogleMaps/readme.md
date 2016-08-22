@@ -119,6 +119,7 @@ API parameters
 According to [Google Place API](https://developers.google.com/places/web-service/search), we need to create a request to the following URL to get data.
 `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=-33.8670522,151.1957362&radius=500&types=food&name=cruise&key=YOUR_API_KEY`
 Where
+
 |parameter|Detail|
 |---------|-----------------------------------------------|
 |key      |The API key that we applied above.             |
@@ -126,6 +127,7 @@ Where
 |radius   |The radius of the range that we want to search.|
 
 or
+
 |parameter|Detail|
 |---------|-----------------------------------------------|
 |key      |The API key that we applied above.             |
@@ -133,6 +135,7 @@ or
 
 are **required**. It means that we can either choose parameters on the first table or parameters on the second table.
 In this project, we need other optional parameters.
+
 |parameter|Detail|
 |---------|-----------------------------------------------|
 |language |The language that we want in return JSON.      |
